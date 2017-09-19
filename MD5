@@ -1,0 +1,12 @@
+74a7f40c1c25c0009bdb091b541c5656 *DESCRIPTION
+02744cf3ec74eb055ee4e734ec8a3cf1 *NAMESPACE
+9a7ff4f03790a087ee9eb79cd4bac2c3 *R/MatchPW.R
+2e0e2099a4a190d2b3e4ecab59ded5c8 *R/MatchW.R
+cf04161c81c6b278397f3587434ce3a3 *R/summary.Match.R
+8ea126e80cc448d03740542191881198 *build/partial.rdb
+c1f8b118bec99dcb628045d42afac465 *data/schools.rda
+a16177be5c09895709f6091ed5144273 *man/CMatching-package.Rd
+8b62f3e8a1b2bff3361af4a09b6abd0a *man/MatchPW.Rd
+bc5676d82ff12931bfc1bdeb0fc9fb8f *man/MatchW.Rd
+fed042ed634c393caac37af09d68c22d *man/schools.Rd
+4a9e1b068a3c9ffee5da338a0f2baad8 *man/summary.Match.Rd
