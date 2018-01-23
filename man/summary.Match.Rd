@@ -39,7 +39,7 @@ A summary of most important output from a "\code{Match}" object. If \emph{Group}
 \references{
 Sekhon, Jasjeet S. 2011. Multivariate and Propensity Score Matching Software with Automated Balance Optimization. \emph{Journal of Statistical Software 42(7): 1-52.} http://www.jstatsoft.org/v42/i07/
 
-Arpino, B., and Cannas, M. (2016) Propensity score matching with clustered data. An application to the estimation of the impact of caesarean section on the Apgar score. \emph{Statist. Med., 35: 2074–2091}. doi: 10.1002/sim.6880.
+Arpino, B., and Cannas, M. (2016) Propensity score matching with clustered data. An application to the estimation of the impact of caesarean section on the Apgar score. \emph{Statistics in Medicine, 35: 2074–2091}. doi: 10.1002/sim.6880.
 }
 \author{
 Massimo Cannas  <massimo.cannas@unica.it>
@@ -62,3 +62,4 @@ See also \code{\link{Match}},\code{\link{MatchW}},\code{\link{MatchPW}}, \code{\
 %}
 %\keyword{ ~kwd1 }% use one of  RShowDoc("KEYWORDS")
 %\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+

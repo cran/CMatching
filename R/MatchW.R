@@ -3,7 +3,7 @@ function(Y=NULL, Tr, X,
 Group=NULL,estimand="ATT",M=1,exact=NULL,caliper=0.25,
 weights=NULL,replace=TRUE,ties=TRUE,...) {
 # match units within clusters defined by the variable Group. 
-	  	   # check missing input variables
+	  	   # check input variables
 
        if (any(Group%%1==0)==FALSE & is.null(Group)==FALSE){
        	print("The variable Group should be integer valued")
@@ -18,13 +18,17 @@ weights=NULL,replace=TRUE,ties=TRUE,...) {
         	}
         if (is.null(exact)) exact<-FALSE 
         
+        Y.orig <- Y
+        Y        <- if(is.null(Y.orig) ) {Y <- rep(0,length(Tr))} else {Y <- Y.orig}
+        
         if (is.null(Group)){
         	Group<-rep(1, length(Tr))
         	}
         Gmax <- length(unique(Group))#dim(table((Group)));
         if (Gmax==1){
         	warning("There is only one group: same output of Match")
-        	B<-Match(Y,Tr,X)
+        	B<-Match(Y,Tr,X,estimand=estimand,M=1,exact=exact,caliper=caliper,
+weights=weights,replace=replace,ties=ties)
         	return(B)
         	stop
         	}
@@ -45,8 +49,8 @@ weights=NULL,replace=TRUE,ties=TRUE,...) {
         Index <- as.numeric(c(0, cumsum(table(Group))))
     
         for (i in 1:Gmax){
-        # calculate Caliper of the Match function: 
-        # defined so that it is a fixed proportion of the OVERALL sd of each variable
+        # calculate Caliper for the Match function: 
+        # it is a fixed proportion of the OVERALL sd of each variable
                if (is.null(caliper)) intcaliper[i]  <- NULL
                           
                if (!is.null(caliper)) {
@@ -60,8 +64,8 @@ weights=NULL,replace=TRUE,ties=TRUE,...) {
                                }      
                                  }
  
-          # Match 
-          b <- Match(Y = Y2[[i]], Tr = Tr2[[i]], X = X2[[i]], 
+          # Match within clusters 
+          b <- Match(Y =Y2[[i]] , Tr = Tr2[[i]], X = X2[[i]], 
           estimand=estimand,M=M,exact=exact,caliper= intcaliper,
           replace=replace,ties=ties)
           
@@ -103,7 +107,7 @@ weights=NULL,replace=TRUE,ties=TRUE,...) {
         lm(c(Y[B$index.control], Y[B$index.treat]) ~ c(Tr[B$index.control], Tr[B$index.treat]), weights = c(B$weights, B$weights))
         m0.vcovCL <- 
         cluster.vcov(m0, c(Group[B$index.control], Group[B$index.treat]))
-        B$se <- coeftest(m0, m0.vcovCL)[4]
+        B$se <- if(is.null(Y.orig)){B$se<-"NULL"}else{B$se<-coeftest(m0, m0.vcovCL)[4]}
         
         # the matched datasets
          mdata <- list()
@@ -147,10 +151,13 @@ weights=NULL,replace=TRUE,ties=TRUE,...) {
         
         # the original number of treated observations by group in the dataset:
         B$orig.treated.nobs.by.group<-table(Group[Tr==1])
+        
         # the original number of control observations by group in the dataset:
         #B$orig.control.nobs.by.group<-table(Group[Tr==0])
+        
         # the number of dropped observations by group in the dataset:
-        B$orig.dropped.nobs.by.group<-table(Group[B$index.dropped])
+        #B$orig.ndrops.by.group.after.within<-
+        B$orig.ndrops.by.group<-table(Group[B$index.dropped])
         
 
           

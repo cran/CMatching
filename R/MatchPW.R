@@ -20,7 +20,20 @@ function(Y=NULL, Tr, X, Group=NULL,estimand="ATT",M=1, exact=NULL,caliper=0.25,r
        	  	  # ordg<-order(Group)
        	      # Group<-Group[ordg] ; Y<-Y[ordg]; Tr<-Tr[ordg] ; X<-as.matrix(as.matrix(X)[ordg,])
        	       }
-
+       	  if (is.null(Group)){
+        	Group<-rep(1, length(Tr))
+        	}
+        	Gmax <- length(unique(Group))#dim(table((Group)));
+          if (Gmax==1){
+        	warning("There is only one group: same output of Match")
+        	B<-Match(Y,Tr,X,estimand=estimand,M=1,exact=exact,caliper=caliper,
+weights=weights,replace=replace,ties=ties)
+        	return(B)
+        	stop
+        	}
+# discriminate data with and without Y
+ Y.orig  <- Y
+ Y        <- if(is.null(Y.orig)){Y<-rep(0,length(Tr))}else{Y<-Y.orig}
  
  # first Match within
  MW<- MatchW(Y, Tr, X, Group,
@@ -82,7 +95,7 @@ if (estimand=="ATC"){
           estimand="ATC",exact=exact,caliper= ucaliper,replace=TRUE,ties=ties)
        } 
 
-# trovo indici dei matchati between nel caso di nessun match
+# find index of matched between in case of no match
 
           if (is.na(btw[1])) {
           	  btw<-list()
@@ -92,7 +105,7 @@ if (estimand=="ATC"){
               btw$weights       <- NULL
               }
 
-# inizializzo ouput
+# initialize ouput
         BB <- NULL 
                     
 # add indexes of matches between (from MW) to indexes of matches between
@@ -121,7 +134,6 @@ if (estimand=="ATC"){
                       }
           
 
-          
 # VALUE (output statistics)
         # dataset matchati
               mdata <- list()
@@ -148,7 +160,7 @@ if (estimand=="ATC"){
         m0.vcovCL <- 
         cluster.vcov(m0, c(Group[BB$index.control], Group[BB$index.treat]))
         #the model estimated standard error of the causal estimand:
-        BB$se <- coeftest(m0, m0.vcovCL)[4];
+        BB$se <- if(is.null(Y.orig)){BB$se<-"NULL"} else {BB$se<-coeftest(m0, m0.vcovCL)[4]};
          
 # descriptive stats general
 
@@ -189,17 +201,18 @@ if (estimand=="ATC"){
         #BB$orig.control.nobs.by.group<- MW$orig.control.nobs.by.group
         
 # the number of dropped observations by group after within group matching
-         BB$orig.dropped.nobs.by.group.after.within<-MW$orig.dropped.nobs.by.group
+         BB$orig.ndrops.by.group.after.within<-MW$orig.ndrops.by.group
         #<-table(Group[MW$index.dropped])
          
 # the numb. of dropped observations by group after preferential within group matching
-         BB$orig.dropped.nobs.by.group.after.prefwithin<-table(Group[BB$index.dropped])
+         #BB$orig.ndrops.by.group.after.prefwithin<-
+         BB$orig.ndrops.by.group<-table(Group[BB$index.dropped])
          
         # Some extra info
         #BB$MatchLoopC = MW$MatchLoopC
         BB$version <- "matchprefwithin" 
        
         #return output
-        class(BB) <- "Match"#così MatchBalance la legge...
+        class(BB)    <- "Match"
         return(BB) 
  }

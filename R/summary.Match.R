@@ -3,14 +3,14 @@ function (object, ..., full = FALSE, digits = 5)
 {
 
     if (!is.list(object)) {
-        warning("'Match' object contains less than two valid matches.  Cannot proceed.")
+        warning("'Match' object contains less than two valid matches. Cannot proceed.")
         return(invisible(NULL))
     }
     if (class(object) != "Match") {
         warning("Object not of class 'Match'")
         return(invisible(NULL))
     }
-# object is output of Match function: same summary of summary.Match
+# object is output of Match function: same output of summary.Match
 if ( object$version!="matchwithin" & object$version!="matchprefwithin"){
     if (object$version != "fast" ) {
         cat("\n")
@@ -88,19 +88,16 @@ if ( object$version!="matchwithin" & object$version!="matchprefwithin"){
         cat("\n")
     }
 }
-    # object is output of MatchW or MatchPW: sligthly customized output
+    # object is output of MatchW or MatchPW: add customized (by groups) statistics
 else{
     	     cat("\n")
         cat("Estimate... ", format(object$est, digits = digits), 
             "\n")
         cat("SE......... ", format(object$se, digits = digits), 
             "\n")
-        cat("T-stat..... ", format(object$est/object$se, 
-            digits = digits), "\n")
-        cat("p.val...... ", format.pval((1 - pnorm(abs(object$est/object$se))) * 
-            2, digits = digits), "\n")
+        #cat("T-stat..... ", format(object$est/object$se, digits = digits), "\n")
+        #cat("p.val...... ", format.pval((1 - pnorm(abs(object$est/object$se))) *  2, digits = digits), "\n")
         cat("\n")
-        
             if (object$orig.wnobs != object$orig.nobs) 
         cat("Original number of observations (weighted)... ", 
             round(object$orig.wnobs, 3), "\n")
@@ -113,14 +110,29 @@ else{
     if (object$estimand != "ATC") {
         cat("Original number of treated obs............... ", 
             object$orig.treated.nobs, "\n")
-       cat("Original number of treated obs by group...... ", 
-            object$orig.treated.nobs.by.group, "\n")
+       cat("Original number of treated obs by group...... ", "\n")
+            print(object$orig.treated.nobs.by.group)
+       cat("\n")
+               
+                   tab.drops             <- object$orig.treated.nobs.by.group
+                   for (i in 1:length(tab.drops)){
+   	                       tab.drops[i]  <-
+   	                       object$orig.ndrops.by.group[names(object$orig.treated.nobs.by.group)[i]]
+                   	}
+                   tab.drops[is.na(tab.drops)] <- 0
      }
     else {
         cat("Original number of control obs............... ", 
             object$orig.nobs - object$orig.treated.nobs, "\n")
-                  cat("Original number of control obs by group........ ", 
-            object$orig.control.nobs.by.group, "\n")
+                  cat("Original number of control obs by group........ ", "\n" )
+            print(object$orig.control.nobs.by.group)
+             cat("\n")
+                   tab.drops             <- object$orig.control.nobs.by.group
+                   for (i in 1:length(tab.drops)){
+   	                       tab.drops[i]  <-
+   	                       object$orig.ndrops.by.group[names(object$orig.control.nobs.by.group)[i]]
+                   	}
+                   tab.drops[is.na(tab.drops)] <- 0
     }
     cat("Matched number of observations............... ", round(object$wnobs, 
         3), "\n")
@@ -131,13 +143,13 @@ else{
         cat("Number of obs dropped by 'exact' or 'caliper' ........  ", 
             object$ndrops.matches, "\n")
             if(object$version=="matchwithin"){
-        cat("Number of obs dropped by 'exact' or 'caliper' by group  ", 
-            object$orig.dropped.nobs.by.group, "\n")  
+        cat("Number of obs dropped by 'exact' or 'caliper' by group  ", "\n") 
+                  print(tab.drops)                                # table drops after within
+                #print(object$orig.ndrops.by.group)  # drops after within
             } else{
-            #cat("Number of obs dropped by 'exact' or 'caliper'\n","by group after within ...................... ", 
-            #object$orig.dropped.nobs.by.group.after.within, "\n")  
-            cat("Number of obs dropped by 'exact' or 'caliper by group  ", 
-            object$orig.dropped.nobs.by.group.after.prefwithin, "\n")  
+            cat("Number of obs dropped by 'exact' or 'caliper by group  ", "\n")
+            print(tab.drops)                                # table drops after pref within
+            #print(object$orig.ndrops.by.group.after.prefwithin)  # drops after pref.within
            } 
         if (object$ndrops.matches != round(object$ndrops)) 
             cat("Weighted #obs dropped by 'exact' or 'caliper' ", 
@@ -150,13 +162,13 @@ else{
         cat("Number of obs dropped by 'exact' or 'caliper' .........  ", 
             object$ndrops.matches, "\n")
             if(object$version=="matchwithin"){
-            cat("Number of obs dropped by 'exact' or 'caliper' by group   ", 
-            object$orig.dropped.nobs.by.group, "\n")  
+            cat("Number of obs dropped by 'exact' or 'caliper' by group   ","\n")
+            print(tab.drops) # tab drops after within 
+            #print(object$orig.ndrops.by.group)  # drops after within
             } else{
-            #cat("Number of obs dropped by 'exact' or 'caliper'\n","by group after within ...................... ", 
-            #object$orig.dropped.nobs.by.group.after.within, "\n")  
-            cat("Number of obs dropped by 'exact' or 'caliper' by group   ", 
-            object$orig.dropped.nobs.by.group.after.prefwithin, "\n")  
+            cat("Number of obs dropped by 'exact' or 'caliper' by group   ", "\n")
+            print(tab.drops) # tab drops after pref within 
+            #print(object$orig.ndrops.by.group.after.prefwithin) # drops after pref.within 
             } 
 
         if (object$ndrops.matches != round(object$ndrops)) 
@@ -164,16 +176,15 @@ else{
                 round(object$ndrops, 3), "\n")
         cat("\n")
      }
-
-    	
 }
-    
     z <- list()
     class(z) <- "summary.Match"
     return(invisible(z))
 }
 
-print.summary.Match <- function(x, ...)
-  {
+
+print.summary.Match <-
+function (x, ...) 
+{
     invisible(NULL)
-  }
+}

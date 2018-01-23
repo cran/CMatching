@@ -29,7 +29,7 @@ A matrix of covariates we wish to match on. This matrix should contain all confo
 }
   \item{Group}{
 %%     ~~Describe \code{Group} here~~
-A vector describing the clustering structure (typically the cluster ID). This can be any numeric vector of the same length of \code{Tr} and \code{X}  containing integer numbers in ascending order otherwise an error message will be returned. Default is NULL, however if \code{Group} is missing or contains only one integer the output of the \emph{Match} function is returned with a warning.  
+A vector describing the clustering structure (typically the cluster ID). This can be any numeric vector of the same length of \code{Tr} and \code{X}  containing integer numbers in ascending order otherwise an error message will be returned. Default is NULL, however if \code{Group} is missing, NULL or contains only one value the output of the \emph{Match} function is returned with a warning.  
 }
   \item{estimand}{
 %%     ~~Describe \code{estimand} here~~
@@ -66,12 +66,12 @@ Note that additional arguments of the Match function are not used.
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
-This function is a wrapper of the \code{Match} function
 % with a reduced number of arguments and some additional output showing how the matching output cluster by cluster. The function is 
-meant to be a natural extension of the Match function to clustered data. %An experienced user of the Match function can consult only the "Group" argument and the cluster-adjusted standard errors.
+ %An experienced user of the Match function can consult only the "Group" argument and the cluster-adjusted standard errors.
 %This function is a wrapper of the \code{Match} function which can be used to perform the matching cluster by cluster and to obtain.  %The matching is performed in each cluster using parameters specified by Match but only a subset of parameers is available. It is similar to matchby but it  the 
 %It returns an object of class ''\code{Match}" and so it is compatible containing a matched dataset (possibly) along with causal estimates and standard error. which can be analyzed% and and it is meant to be a natural extension of \code{Match} to clustered data. 
-The function retains main arguments of \code{Match} and returns the same type of object ("\code{Match}") with some additional output showing the matching cluster by cluster. It differs from wrapper \code{Matchby} because model-based standard errors are given instead of classic standard errors and because the caliper is the same for each cluster. Moreover, observation weights are available.  %An alternative estimator is the weighted average of cluster specific standard errors, which is provided by the \code{Matchby} function.
+The function retains the main arguments of \code{Match} and returns the same type of object ("\code{Match}") with some additional output showing the matching cluster by cluster. This function is meant to be a natural extension of the \code{Match} function to clustered data.
+ It differs from wrapper \code{Matchby} because model-based standard errors are given and because the caliper is in standard deviation units of the covariates on the overall dataset (and thus it is the same for all clusters). Moreover, observation weights are available.  %An alternative estimator is the weighted average of cluster specific standard errors, which is provided by the \code{Matchby} function.
 }
 \value{
 %%  ~Describe the value returned
@@ -82,9 +82,9 @@ The function retains main arguments of \code{Match} and returns the same type of
   \item{index.control}{The index of control observations in the matched dataset.}
   \item{index.treated}{The index of control observations in the matched dataset.}
     \item{index.dropped}{The index of dropped observations due to the exact or caliper option. Note that these observations are treated if estimand is "ATT", controls if "ATC".}
-     \item{est}{The causal estimate. This is provided only if \code{Y} is not null. If estimand is "ATT" it is the (weighted) mean of \code{Y} in matched treated units minus the (weighted) mean of \code{Y} in matched controls. Equivalently, it is the weighted average of the within-cluster ATT's', with weights given by cluster sizes.} 
+     \item{est}{The causal estimate. This is provided only if \code{Y} is not null. If estimand is "ATT" it is the (weighted) mean of \code{Y} in matched treated units minus the (weighted) mean of \code{Y} in matched controls. Equivalently, it is the weighted average of the within-cluster ATTs, with weights given by cluster sizes in the matched dataset.} 
       \item{se}{A model-based standard error for the causal estimand. This is a cluster robust estimator of the standard error for the linear model: \code{Y ~ constant+Tr}, run on the matched dataset (see \code{\link{cluster.vcov}} for details on how this estimator is obtained). Note that these standard errors differ from a weighted average of cluster specific standard errors provided by the \code{Matchby} function, which are generally larger. Estimating standard errors for causal parameters with clustered data is an active field of research and there is no perfect solution to date so the choice of standard errors should be considered carefully.}   
-\item{mdata}{The matched datasets. These datasets can also be recovered using index.treated and index.controls.}
+\item{mdata}{A list containing the matched datasets produced by \code{MatchPW}. Three datasets are included in this list: \code{Y}, \code{Tr} and \code{X}. The matched dataset for \code{Group} can be recovered by \code{rbind(Group[index.treated],Group[index.control])}.}
 
 \item{orig.treated.nobs.by.group}{The original number of treated observations by group in the dataset.}
 
@@ -99,7 +99,7 @@ The function retains main arguments of \code{Match} and returns the same type of
 \item{caliper}{The caliper used.}
 \item{intcaliper}{The internal caliper used.}
 \item{exact}{The value of the exact argument.}
-\item{ndrops.matches}{The number of matches dropped either because of the caliper or exact option.}
+\item{ndrops.matches}{The number of matches dropped either because of the caliper or exact option (or because of forcing the match within-clusters).}
 \item{estimand}{The estimand required.}
 }
 \references{
@@ -107,7 +107,7 @@ The function retains main arguments of \code{Match} and returns the same type of
 
 Sekhon, Jasjeet S. 2011. Multivariate and Propensity Score Matching Software with Automated Balance Optimization. \emph{Journal of Statistical Software 42(7): 1-52.} http://www.jstatsoft.org/v42/i07/
 
-Arpino, B., and Cannas, M. (2016) Propensity score matching with clustered data. An application to the estimation of the impact of caesarean section on the Apgar score. \emph{Statist. Med., 35: 2074–2091}. doi: 10.1002/sim.6880.
+Arpino, B., and Cannas, M. (2016) Propensity score matching with clustered data. An application to the estimation of the impact of caesarean section on the Apgar score. \emph{Statistics in Medicine, 35: 2074–2091}. doi: 10.1002/sim.6880.
 
 }
 \author{
@@ -128,65 +128,77 @@ See also \code{\link{Match}}, \code{\link{MatchBalance}}
 
 \examples{
 data(schools)
- 
+	
 # Kreft and De Leeuw, Introducing Multilevel Modeling, Sage (1988).   
-# The data set is the subsample of NELS-88 data consisting
-# of 10 handpicked schools from the 1003 schools in the full data set.
+# The data set is the subsample of NELS-88 data consisting of 10 handpicked schools 
+# from the 1003 schools in the full data set.
+ 
+# Suppose that the effect of homeworks on math score is unconfounded conditional on X and
+# unobserved school features (we assume this only for illustrative purpouse)
 
 # Let us consider the following variables:
 
-X<-schools$ses # X may contain more covariates (all confounders)
+X<-schools$ses #X<-as.matrix(schools[,c("ses","white","public")])
 Y<-schools$math
 Tr<-ifelse(schools$homework>1,1,0)
 Group<-schools$schid
+# Note that when Group is missing, NULL or there is only one Group the function returns
+# the output of the Match function with a warning.
 
 # Let us assume that the effect of homeworks (Tr) on math score (Y)
 # is unconfounded conditional on X and other unobserved schools features.
 # Several strategies to handle unobserved group characteristics
-# are described in Arpino & Cannas, 2016 (see References).
+# are described in Arpino & Cannas, 2016 (see References). 
 
-#### Multivariate Matching on covariates in X (default parameters:
-# one-to-one matching on X with replacement with a caliper of 0.25).
 
-# Match within schools
- mw<-MatchW(Y=schools$math, Tr=Tr, X=schools$ses, Group=schools$schid, caliper=0.1)
- summary(mw)
+# Multivariate Matching on covariates in X (default parameters: one-to-one matching on X
+# with replacement with a caliper of 0.25; see Match).
+
+### Matching within schools
+ mw<-MatchW(Y=Y, Tr=Tr, X=X, Group=Group, caliper=0.1)
  
-# Match preferentially within school (first match within schools
-# and then (try to) match remaining units between schools)
-mpw <- MatchPW(Y=schools$math, Tr=Tr, X=schools$ses, Group=schools$schid, caliper=0.1)
-summary(mpw)
-
-# compare balance before and after matching
-bmw  <- MatchBalance(Tr~ses,data=schools,match.out=mw)
-bmpw<- MatchBalance(Tr~ses,data=schools,match.out=mpw)
-
- # see drops by school
- mpw$orig.dropped.nobs.by.group.after.within       # after within
- mpw$orig.dropped.nobs.by.group.after.prefwithin # after preferential within
-
+ # compare balance before and after matching
+ bmw  <- MatchBalance(Tr~X,data=schools,match.out=mw)
+ 
+ # calculate proportion of matched observations
+  (mw$orig.treated.nobs-mw$ndrops)/mw$orig.treated.nobs 
+  
+ # check number of drops by school
+ mw$orig.ndrops.by.group 
+ 
+ # examine output
+ mw                   # complete list of results                 
+ summary(mw)  # basic statistics
+ 
+ 
 #### Propensity score matching
 
-# estimate the ps model
+# estimate the propensity score (ps) model
 
 mod <- glm(Tr~ses+parented+public+sex+race+urban,
 family=binomial(link="logit"),data=schools)
 eps <- fitted(mod)
 
-# propensity score matching within schools
-
+# eg 1: within-school propensity score matching
 psmw <- MatchW(Y=schools$math, Tr=Tr, X=eps, Group=schools$schid, caliper=0.1)
 
-# can combine MatchW and MatchPW with several specifications of ps:
-# eg 1: match within using ps estimated from dummy logit model 
+# We can use other strategies for controlling unobserved cluster covariates
+# by using different specifications of ps (see Arpino and Mealli for details):
 
-mod <- glm(Tr ~ ses + parented + public + sex + race + urban
- +schid - 1,family=binomial(link="logit"),data=schools)
+# eg 2: standard propensity score matching using ps estimated
+# from a logit model with dummies for schools
+
+mod <- glm(Tr ~ ses + parented + public + sex + race + urban 
++schid - 1,family=binomial(link="logit"),data=schools)
 eps <- fitted(mod)
 
-dpsm <- MatchW(Y=schools$math, Tr=Tr, X=eps, Group=schools$schid, caliper=0.1)
 
-# eg2: classic matching using ps estimated from multilevel logit model 
+
+dpsm <- MatchW(Y=schools$math, Tr=Tr, X=eps, caliper=0.1)
+# this is equivalent to run Match with X=eps
+
+# eg3: standard propensity score matching using ps estimated from 
+# multilevel logit model (random intercept at the school level)
 
 require(lme4)
 mod<-glmer(Tr ~ ses + parented + public + sex + race + urban + (1|schid),
@@ -194,10 +206,11 @@ family=binomial(link="logit"), data=schools)
 eps <- fitted(mod)
 
 mpsm<-MatchW(Y=schools$math, Tr=Tr, X=eps, Group=NULL, caliper=0.1)
-# or simply run Match with X=eps
+# this is equivalent to run Match with X=eps
+ 
+
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{ matching }
 \keyword{ clustered data }
-%\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
