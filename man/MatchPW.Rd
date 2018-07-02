@@ -104,18 +104,18 @@ Arpino, B., and Cannas, M. (2016) Propensity score matching with clustered data.
 }
 \author{
 %%  ~~who you are~~
-\packageAuthor{CMatching}
+\packageMaintainer{CMatching}
 }
 \note{
 %%  ~~further notes~~
-The function returns an object of class \code{Match}. This allows compatibility with the \code{MatchBalance} function which can be used to examine the covariate balance before and after matching. See the examples below.
+The function returns an object of class \code{CMatch}. The \code{CMatchBalance} function can be used to examine the covariate balance before and after matching. See the examples below.
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~\emph{
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
-See also \code{\link{Match}}, \code{\link{MatchBalance}}
+See also \code{\link{Match}},\code{ \link{MatchBalance}}
 }
 \examples{
 data(schools)
@@ -124,9 +124,6 @@ data(schools)
 # The data set is the subsample of NELS-88 data consisting of 10 handpicked schools 
 # from the 1003 schools in the full data set.
  
-# Suppose that the effect of homeworks on math score is unconfounded conditional on X and
-# unobserved school features (we assume this only for illustrative purpouse)
-
 # Let us consider the following variables:
 
 X<-schools$ses #X<-as.matrix(schools[,c("ses","white","public")])
@@ -136,22 +133,28 @@ Group<-schools$schid
 # Note that when Group is missing, NULL or there is only one Group the function
 # returns the output of the Match function with a warning.
 
-# Let us assume that the effect of homeworks (Tr) on math score (Y)
+# Suppose that the effect of homeworks (Tr) on math score (Y)
 # is unconfounded conditional on X and other unobserved schools features.
 # Several strategies to handle unobserved group characteristics
-# are described in Arpino & Cannas, 2016 (see References). 
+# are described in Arpino and Cannas, 2016 (see References). 
 
 
-# Multivariate Matching on covariates in X (default parameters: one-to-one
-# matching on X with replacement with a caliper of 0.25; see \code{Match}).
+# Multivariate Matching on covariates in X 
+# default parameters: one-to-one matching on X
+# with replacement with a caliper of 0.25; see also \code{Match}).
+ 
+
  
 ### Match preferentially within school 
 # first match within schools
 # then (try to) match remaining units between schools
  mpw <- MatchPW(Y=schools$math, Tr=Tr, X=schools$ses, Group=schools$schid, caliper=0.1)
+ # equivalent to
+ # CMatch(type="pwithin",Y=schools$math, Tr=Tr, X=schools$ses, 
+ #   Group=schools$schid, caliper=0.1)
 
 # examine covariate balance
-  bmpw<- MatchBalance(Tr~ses,data=schools,match.out=mpw)
+  bmpw<- CMatchBalance(Tr~ses,data=schools,match.out=mpw)
 
 # proportion of matched observations
   (mpw$orig.treated.nobs-mpw$ndrops) / mpw$orig.treated.nobs 
@@ -160,10 +163,11 @@ Group<-schools$schid
 # proportion of matched observations after match-within only
   (mpw$orig.treated.nobs-sum(mpw$orig.ndrops.by.group.after.within)) / mpw$orig.treated.nobs
 
-# see complete output
+# complete output
    mpw
 # or use summary method for main results
    summary(mpw) 
+
 
 #### Propensity score matching
 
@@ -194,10 +198,12 @@ dpsm <- MatchPW(Y=schools$math, Tr=Tr, X=eps, caliper=0.1)
 # eg3: standard propensity score matching using ps estimated from 
 # multilevel logit model (random intercept at the school level)
 
+
 require(lme4)
 mod<-glmer(Tr ~ ses + parented + public + sex + race + urban + (1|schid),
 family=binomial(link="logit"), data=schools)
 eps <- fitted(mod)
+
 
 mpsm<-MatchPW(Y=schools$math, Tr=Tr, X=eps, Group=NULL, caliper=0.1)
 # this is equivalent to run Match with X=eps

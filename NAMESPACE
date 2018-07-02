@@ -1,5 +1,5 @@
 # import
-# import all of Matching and selected functions from other packages
+# import Matching and selected functions from other packages
 import(Matching)
 importFrom(stats, lm)
 importFrom(stats, pnorm)
@@ -8,9 +8,8 @@ importFrom(multiwayvcov,cluster.vcov)
 importFrom(lme4,glmer)
 
 # export 
-# exportPattern(.”)
-# exportPattern("^[[:alpha:]]+")
-
-export(MatchW,MatchPW)
-S3method(summary, Match)
-S3method(print, summary.Match)
+export(CMatch,MatchW,MatchPW,summary.CMatch,print.summary.CMatch,CMatchBalance)
+S3method(summary, CMatch)
+S3method(print, summary.CMatch)
+S3method(CMatchBalance, default)
+S3method(CMatchBalance, CMatch)

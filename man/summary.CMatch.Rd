@@ -1,6 +1,6 @@
-\name{summary.Match}
-\alias{summary.Match}
-\alias{print.summary.Match}
+\name{summary.CMatch}
+\alias{summary.CMatch}
+\alias{print.summary.CMatch}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Summarizing output from MatchW and MatchPW
@@ -9,12 +9,12 @@ Summarizing output from MatchW and MatchPW
 summary method for \code{\link{MatchW}} and \code{\link{MatchPW}}
 }
 \usage{
-\method{summary}{Match}(object, ..., full = FALSE, digits = 5)
+\method{summary}{CMatch}(object, ..., full = FALSE, digits = 5)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object}{
-An object of class "\code{Match}".
+An object of class "\code{CMatch}".
 }
   \item{\dots}{
 Other options for the generic summary function.
@@ -27,7 +27,7 @@ The number of significant digits that should be displayed.
 }
 }
 \details{
-A summary of most important output from a "\code{Match}" object. If \emph{Group} contains only one value the output is the same of \code{summary(Match())}. Otherwise the output contains also the distribution of treated (control) observations by group and the distribution of dropped (because od 'caliper' or 'exact' option) by group. 
+A summary of most important output from a "\code{CMatch}" object, including size of matched dataset and estimates (if \code{Y} is not \code{NULL}). If \emph{Group} contains only one value the output is the same of the summary method of package \code{Matching}. Otherwise the output shows also the distribution of treated (control) observations \emph{by group} and the distribution of dropped (because of 'caliper' or 'exact' option), also by group.
 }
 % \value{
 % %%  ~Describe the value returned
@@ -51,7 +51,7 @@ Naive standard errors are not available when there is more than one group so the
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-See also \code{\link{Match}},\code{\link{MatchW}},\code{\link{MatchPW}}, \code{\link{MatchBalance}}
+See also \code{\link{Match}},  \code{ \link{MatchW}},  \code{ \link{MatchPW}}, \code{ \link{MatchBalance}}
 }
 % \examples{
 % ##---- Should be DIRECTLY executable !! ----

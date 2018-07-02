@@ -1,20 +1,24 @@
-\name{MatchW}
-\alias{MatchW}
+\name{CMatch}
+\alias{CMatch}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
-Within-cluster Matching 
+Within and preferential-within cluster matching. 
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
-This function implements multivariate and propensity score matching within clusters defined by the \code{Group} variable.   
+This function implements multivariate and propensity score matching in clusters defined by the \code{Group} variable. It returns an object of class ''\code{CMatch}'' which can be be summarized and used as input of the \code{CMatchBalance} function to examine how much the procedure resulted in improved covariate balance.
 }
 \usage{
-MatchW(Y = NULL, Tr, X, Group = NULL, estimand = "ATT", M = 1, 
+CMatch(type, Y = NULL, Tr, X, Group = NULL, estimand = "ATT", M = 1, 
 exact = NULL, caliper = 0.25, weights = NULL, replace = TRUE, ties = TRUE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
+	  \item{type}{
+%%     ~~Describe \code{Y} here~~
+The type of matching desired. "within" for a pure within-cluster matching and "pwithin" for matching preferentially within. The preferential approach first searches for matchable units within the same cluster. If no match was found the algorithm searches in other clusters.
+}
   \item{Y}{
 %%     ~~Describe \code{Y} here~~
 A vector containing the outcome of interest. 
@@ -61,7 +65,7 @@ An indicator for dealing with multiple matches. If more than M matches are found
 }
   \item{\dots}{
 %%     ~~Describe \code{\dots} here~~
-Note that additional arguments of the Match function are not used.
+Additional arguments to be passed to the \code{Match} function (not all of them can be used).
 }
 }
 \details{
@@ -84,12 +88,9 @@ This function is meant to be a natural extension of the \code{Match} function to
     \item{index.dropped}{The index of dropped observations due to the exact or caliper option. Note that these observations are treated if estimand is "ATT", controls if "ATC".}
      \item{est}{The causal estimate. This is provided only if \code{Y} is not null. If estimand is "ATT" it is the (weighted) mean of \code{Y} in matched treated units minus the (weighted) mean of \code{Y} in matched controls. Equivalently, it is the weighted average of the within-cluster ATTs, with weights given by cluster sizes in the matched dataset.} 
       \item{se}{A model-based standard error for the causal estimand. This is a cluster robust estimator of the standard error for the linear model: \code{Y ~ constant+Tr}, run on the matched dataset (see \code{\link{cluster.vcov}} for details on how this estimator is obtained). Note that these standard errors differ from a weighted average of cluster specific standard errors provided by the \code{Matchby} function, which are generally larger. Estimating standard errors for causal parameters with clustered data is an active field of research and there is no perfect solution to date.}   
-\item{mdata}{A list containing the matched datasets produced by \code{MatchPW}. Three datasets are included in this list: \code{Y}, \code{Tr} and \code{X}. The matched dataset for \code{Group} can be recovered by \code{rbind(Group[index.treated],Group[index.control])}.}
-
+\item{mdata}{A list containing the matched datasets produced by \code{CMatch}. Three datasets are included in this list: \code{Y}, \code{Tr} and \code{X}. The matched dataset for \code{Group} can be recovered by \code{rbind(Group[index.treated],Group[index.control])}.}
 \item{orig.treated.nobs.by.group}{The original number of treated observations by group in the dataset.}
-
 \item{orig.control.nobs.by.group}{The original number of control observations by group in the dataset.}
-
 \item{orig.dropped.nobs.by.group}{The number of dropped observations by group after within cluster matching.}
 \item{orig.nobs}{The original number of observations in the dataset.}
 \item{orig.wnobs}{The original number of weighted observations in the dataset.}
@@ -112,7 +113,7 @@ Arpino, B., and Cannas, M. (2016) Propensity score matching with clustered data.
 }
 \author{
 %%  ~~who you are~~
-\packageMaintainer{CMatching} and E.Colicino
+\packageMaintainer{CMatching}
 }
 \note{
 %%  ~~further notes~~
@@ -130,83 +131,108 @@ See also \code{\link{Match}}, \code{ \link{MatchBalance}}
 data(schools)
 	
 # Kreft and De Leeuw, Introducing Multilevel Modeling, Sage (1988).   
-# The data set is the subsample of NELS-88 data consisting of 10 handpicked schools 
+# The data set is the subsample of NELS-88 data consisting of 10 handpicked schools
 # from the 1003 schools in the full data set.
  
+# Suppose that the effect of homeworks on math score is unconfounded conditional on X
+# and unobserved school features (we assume this only for illustrative purpouse).
+
 # Let us consider the following variables:
 
-X<-schools$ses #X<-as.matrix(schools[,c("ses","white","public")])
+X<-schools$ses # or X<-as.matrix(schools[,c("ses","white","public")])
 Y<-schools$math
 Tr<-ifelse(schools$homework>1,1,0)
 Group<-schools$schid
-
-# Note that when Group is missing, NULL or there is only one group the function returns
+# When Group is missing or there is only one Group CMatch returns 
 # the output of the Match function with a warning.
 
-# Suppose that the effect of homeworks (Tr) on math score (Y)
-# is unconfounded conditional on X and other unobserved schools features.
+# Let us assume that the effect of homeworks (Tr) on math score (Y)
+# is unconfounded conditional on X and other unobserved school features.
 # Several strategies to handle unobserved group characteristics
-# are described in Arpino and Cannas, 2016 (see References). 
+# are described in Arpino & Cannas, 2016 (see References). 
 
 
 # Multivariate Matching on covariates in X 
-# default parameters: one-to-one matching on X
-# with replacement with a caliper of 0.25; see also \code{Match}.
+# default parameters: one-to-one matching on X with replacement with a caliper of 0.25
 
 ### Matching within schools
- mw<-MatchW(Y=Y, Tr=Tr, X=X, Group=Group, caliper=0.1)
- # equivalent to CMatch(type="within",Y=Y, Tr=Tr, X=X, Group=Group, caliper=0.1)
+ mw<-CMatch(type="within",Y=Y, Tr=Tr, X=X, Group=Group, caliper=0.1)
  
  # compare balance before and after matching
  bmw  <- CMatchBalance(Tr~X,data=schools,match.out=mw)
  
- # proportion of matched observations
+ # calculate proportion of matched observations
   (mw$orig.treated.nobs-mw$ndrops)/mw$orig.treated.nobs 
   
  # check number of drops by school
  mw$orig.ndrops.by.group 
  
  # examine output
- mw                   # complete results                 
- summary(mw)          # basic statistics
+ mw                   # complete list of results                 
+ summary(mw)  # basic statistics
  
- 
+### Match preferentially within school 
+# i.e. first match within schools
+# then (try to) match remaining units between schools
+ mpw <- CMatch(type="pwithin",Y=schools$math, Tr=Tr, X=schools$ses, 
+ Group=schools$schid, caliper=0.1)
+
+# examine covariate balance
+  bmpw<- CMatchBalance(Tr~ses,data=schools,match.out=mpw)
+  # equivalent to MatchBalance(...) with mpw coerced to class "Match"
+
+# proportion of matched observations
+  (mpw$orig.treated.nobs-mpw$ndrops) / mpw$orig.treated.nobs 
+# check drops by school
+  mpw$orig.ndrops.by.group  
+# proportion of matched observations after match-within only
+ (mpw$orig.treated.nobs-sum(mpw$orig.ndrops.by.group.after.within)) / mpw$orig.treated.nobs
+
+# see complete output
+   mpw
+# or use summary method for main results
+   summary(mpw) 
+
 #### Propensity score matching
 
-# estimate the propensity score (ps) model
+# estimate the ps model
 
 mod <- glm(Tr~ses+parented+public+sex+race+urban,
 family=binomial(link="logit"),data=schools)
 eps <- fitted(mod)
 
-# eg 1: within-school propensity score matching
-psmw <- MatchW(Y=schools$math, Tr=Tr, X=eps, Group=schools$schid, caliper=0.1)
+# eg 1: within school propensity score matching
+psmw <- CMatch(type="within",Y=schools$math, Tr=Tr, X=eps, 
+Group=schools$schid, caliper=0.1)
+# equivalent to direct call at MatchW(Y=schools$math, Tr=Tr, X=eps,
+# Group=schools$schid, caliper=0.1)
 
-# We can use other strategies for controlling unobserved cluster covariates
-# by using different specifications of ps:
+# eg 2: preferential within school propensity score matching
+psmw <- CMatch(type="pwithin",Y=schools$math, Tr=Tr, X=eps, Group=schools$schid, caliper=0.1)
 
-# eg 2: standard propensity score matching using ps estimated
-# from a logit model with dummies for schools
+# Other strategies for controlling unobserved cluster covariates 
+# via different specifications of propensity score (see Arpino and Mealli):
+
+# eg 3: propensity score matching using ps estimated from a logit model with dummies for hospitals
 
 mod <- glm(Tr ~ ses + parented + public + sex + race + urban 
 +schid - 1,family=binomial(link="logit"),data=schools)
 eps <- fitted(mod)
 
-
-
-dpsm <- MatchW(Y=schools$math, Tr=Tr, X=eps, caliper=0.1)
+dpsm <- CMatch(type="within",Y=schools$math, Tr=Tr, X=eps, Group=NULL, caliper=0.1)
 # this is equivalent to run Match with X=eps
 
-# eg3: standard propensity score matching using ps estimated from 
-# multilevel logit model (random intercept at the school level)
+# eg4: propensity score matching using ps estimated from multilevel logit model 
+# (random intercept at the hospital level)
 
 require(lme4)
-mod<-glmer(Tr ~ ses + parented + public + sex + race + urban + (1|schid),
+mod<-glmer(Tr ~ ses + parented + public + sex + race + urban + (1 | schid),
 family=binomial(link="logit"), data=schools)
 eps <- fitted(mod)
 
-mpsm<-MatchW(Y=schools$math, Tr=Tr, X=eps, Group=NULL, caliper=0.1)
+mpsm<-CMatch(type="within",Y=schools$math, Tr=Tr, X=eps, Group=NULL, caliper=0.1)
 # this is equivalent to run Match with X=eps
+
  
 
 }
