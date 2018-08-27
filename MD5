@@ -1,13 +1,13 @@
-96448864edb26789d2da50664bc73c0a *DESCRIPTION
+c47cf7dd967b1e5f5dd2d7239fa96e12 *DESCRIPTION
 bb733679b8a089c74435f487759b0d75 *NAMESPACE
-19650a461d56ee159cdee9784df8b4aa *R/CMatch.R
+c0fdb1e922e4e4063a8b0a1644d031a8 *R/CMatch.R
 d9787fe0c6cd80117d67086ffa0951ea *R/CMatchBalance.R
 2984b0557e58091fcf1cf2eff11f8dd8 *R/summary.CMatch.R
-af87af023a36d6eae87d0f0f2110d30e *build/partial.rdb
+14df420103bb3caf8ce96c0c6b0fbd3d *build/partial.rdb
 dc298b76946b3645f3702ac56fb927fd *data/schools.rda
 312b93d81a367fcf6c0c751cad10015e *man/CMatch.Rd
 a3a86ac5467ad6d4d1f4277a061faff9 *man/CMatchBalance.Rd
-b2921f59d32806f9964f41fe521a2625 *man/CMatching-package.Rd
+c396e8a5a3dcdfd85c4fc236cd5781ff *man/CMatching-package.Rd
 065b8284ae61c32028f65f2ae62b989c *man/MatchPW.Rd
 84d07ad5a1de2d47081ced014131ec2a *man/MatchW.Rd
 4033c2d46e748a81e52e7810898b4960 *man/schools.Rd

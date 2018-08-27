@@ -59,7 +59,7 @@ weights=weights,replace=replace,ties=ties)
         # Split the data set according to the Group variable
         Y2   <- split(Y, Group)
         Tr2  <- split(Tr, Group)
-        X2   <- split(as.data.frame(X), Group);X2<-sapply(X2,as.matrix)
+        X2   <- split(as.data.frame(X), Group);X2<-sapply(X2,as.matrix,simplify=FALSE)
         W2  <- split(weights, Group)
         
         # Initialize results

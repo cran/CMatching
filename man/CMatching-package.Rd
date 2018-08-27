@@ -12,8 +12,8 @@
 	\tabular{ll}{
 Package: \tab CMatching\cr
 Type: \tab Package\cr
-Version: \tab 2.1\cr
-Date: \tab 2018-07-01\cr
+Version: \tab 2.2\cr
+Date: \tab 2018-07-06\cr
 License: \tab GPL version 3 or later\cr
 }
 % % The DESCRIPTION file:
