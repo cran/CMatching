@@ -165,7 +165,7 @@ Group<-schools$schid
   (mw$orig.treated.nobs-mw$ndrops)/mw$orig.treated.nobs 
   
  # check number of drops by school
- mw$orig.ndrops.by.group 
+ mw$orig.dropped.nobs.by.group
  
  # examine output
  mw                   # complete list of results                 
@@ -184,9 +184,9 @@ Group<-schools$schid
 # proportion of matched observations
   (mpw$orig.treated.nobs-mpw$ndrops) / mpw$orig.treated.nobs 
 # check drops by school
-  mpw$orig.ndrops.by.group  
+  mpw$orig.dropped.nobs.by.group.after.pref.within
 # proportion of matched observations after match-within only
- (mpw$orig.treated.nobs-sum(mpw$orig.ndrops.by.group.after.within)) / mpw$orig.treated.nobs
+ (mpw$orig.treated.nobs-sum(mpw$orig.dropped.nobs.by.group.after.within)) / mpw$orig.treated.nobs
 
 # see complete output
    mpw

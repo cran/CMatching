@@ -174,11 +174,15 @@ weights=weights,replace=replace,ties=ties)
         B$orig.treated.nobs.by.group<-table(Group[Tr==1])
         
         # the original number of control observations by group in the dataset:
-        #B$orig.control.nobs.by.group<-table(Group[Tr==0])
+        B$orig.control.nobs.by.group<-table(Group[Tr==0])
         
-        # the number of dropped observations by group in the dataset:
+        # the number of dropped observations by group in the matched dataset:
         #B$orig.ndrops.by.group.after.within<-
-        B$orig.ndrops.by.group<-table(Group[B$index.dropped])
+         B$orig.ndrops.by.group<-table(Group[B$index.dropped])
+        # B$orig.dropped.nobs.by.group<-orig.ndrops.by.group[names(table(Group))]
+         orig.ndrops.by.group<-0*table(Group)+ B$orig.ndrops.by.group[names(table(Group))]
+         orig.ndrops.by.group[is.na(orig.ndrops.by.group)]<-0
+         B$orig.dropped.nobs.by.group<-orig.ndrops.by.group
         
         B$version<-b$version
           
@@ -397,12 +401,15 @@ if (estimand=="ATC"){
         #BB$orig.control.nobs.by.group<- MW$orig.control.nobs.by.group
         
 # the number of dropped observations by group after within group matching
-         BB$orig.ndrops.by.group.after.within<-MW$orig.ndrops.by.group
+         BB$orig.dropped.nobs.by.group.after.within<-MW$orig.dropped.nobs.by.group
         #<-table(Group[MW$index.dropped])
          
 # the numb. of dropped observations by group after preferential within group matching
          #BB$orig.ndrops.by.group.after.prefwithin<-
          BB$orig.ndrops.by.group<-table(Group[BB$index.dropped])
+         orig.dropped.nobs.by.group.after.pref.within<-0*table(Group)+ BB$orig.ndrops.by.group[names(table(Group))]
+         orig.dropped.nobs.by.group.after.pref.within[is.na(orig.dropped.nobs.by.group.after.pref.within)]<-0
+         BB$orig.dropped.nobs.by.group.after.pref.within<-orig.dropped.nobs.by.group.after.pref.within
          
         # Some extra info
         #BB$MatchLoopC = MW$MatchLoopC

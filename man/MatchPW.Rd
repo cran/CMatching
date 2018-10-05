@@ -84,7 +84,7 @@ The function performs preferential within-cluster matching in the clusters defin
 \item{orig.treated.nobs.by.group}{The original number of treated observations by group in the dataset.}
 \item{orig.control.nobs.by.group}{The original number of control observations by group in the dataset.}
 \item{orig.dropped.nobs.by.group}{The number of dropped observations by group after within cluster matching.}
-\item{orig.dropped.nobs.by.group.after.prefwithin}{The number of dropped observations by group after preferential within group matching.}
+\item{orig.dropped.nobs.by.group.after.pref.within}{The number of dropped observations by group after preferential within group matching.}
 \item{orig.nobs}{The original number of observations in the dataset.}
 \item{orig.wnobs}{The original number of weighted observations in the dataset.}
 \item{orig.treated.nobs}{The original number of treated observations in the dataset.}
