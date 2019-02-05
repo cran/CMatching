@@ -49,7 +49,7 @@ A maximum allowed distance for matching units. Units for which no match was foun
 }
   \item{replace}{
 %%     ~~Describe \code{replace} here~~
-Default is TRUE. Note that setting the parameter to FALSE would give a warning since only the within-matching part can be performed without replacement (see Details).
+ Default is TRUE. From version 2.3 this parameter can be set to FALSE. Assuming ATT this means that controls matched within cannot be matched between (i.e. in the second step). However note that, even when replace is set to FALSE, controls can be re-used during match between.
 }
   \item{ties}{
 %%     ~~Describe \code{ties} here~~
@@ -98,9 +98,9 @@ The function performs preferential within-cluster matching in the clusters defin
 }
 \references{
 %% ~put references to the literature/web site here ~
-Sekhon, Jasjeet S. 2011. Multivariate and Propensity Score Matching Software with Automated Balance Optimization. \emph{Journal of Statistical Software 42(7): 1-52.} http://www.jstatsoft.org/v42/i07/
+Sekhon, Jasjeet S. 2011. Multivariate and Propensity Score Matching Software with Automated Balance Optimization. \emph{Journal of Statistical Software, 42(7): 1-52.} http://www.jstatsoft.org/v42/i07/
 
-Arpino, B., and Cannas, M. (2016) Propensity score matching with clustered data. An application to the estimation of the impact of caesarean section on the Apgar score. \emph{Statistics in Medicine, 35: 2074–2091}. doi: 10.1002/sim.6880.
+Arpino, B., and Cannas, M. (2016) Propensity score matching with clustered data. An application to the estimation of the impact of caesarean section on the Apgar score. \emph{Statistics in Medicine, 35: 2074-2091} doi: 10.1002/sim.6880.
 }
 \author{
 %%  ~~who you are~~

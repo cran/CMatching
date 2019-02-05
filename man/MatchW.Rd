@@ -112,7 +112,7 @@ Arpino, B., and Cannas, M. (2016) Propensity score matching with clustered data.
 }
 \author{
 %%  ~~who you are~~
-\packageMaintainer{CMatching} and E.Colicino
+\packageMaintainer{CMatching}
 }
 \note{
 %%  ~~further notes~~

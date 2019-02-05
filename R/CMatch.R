@@ -4,7 +4,13 @@
 CMatch <-function (type,Y=NULL, Tr, X,
 Group=NULL,estimand="ATT",M=1,exact=NULL,caliper=0.25,
 weights=NULL,replace=TRUE,ties=TRUE,...) {
-   if (type!="within" & type!="pwithin"){stop("type must be one of < within > or < pwithin > ")}
+   if (type!="within" & type!="pwithin"){stop("type must be one of < within > or < pwithin > ")}  
+         if (any(Group%%1==0)==FALSE & is.null(Group)==FALSE){
+       	     stop("The variable Group should be integer valued")
+       	}
+         if (is.unsorted(Group)==TRUE) { 
+         	stop("The variable Group is not in ascending order. Please reorder the input (X,Tr,Y, Group) in ascending order of Groupp.")
+         	}
    else{
    	if (type=="within"){  		
    	return(MatchW(Y, Tr, X, Group,estimand,M,exact,caliper,weights,replace,ties,...))	
@@ -13,8 +19,6 @@ weights=NULL,replace=TRUE,ties=TRUE,...) {
    	return(MatchPW(Y=Y, Tr=Tr, X=X, Group=Group,estimand=estimand,M=M,exact=exact,caliper=caliper,weights=weights,replace=replace,ties=ties,...))	
    	}
    	}}
- 
-
 
 #################
 # MatchW: MATCHING WITHIN GROUPS
@@ -27,10 +31,9 @@ weights=NULL,replace=TRUE,ties=TRUE,...) {
 	  	   # check input variables
 
        if (any(Group%%1==0)==FALSE & is.null(Group)==FALSE){
-       	print("The variable Group should be integer valued")
-       	stop
+       	stop("The variable Group should be integer valued")
        	}
-         if (is.unsorted(Group)==TRUE) { print("The variable Group is not in ascending order. Please reorder the input (X,Tr,Y, Group) in ascending order of Group."); stop
+         if (is.unsorted(Group)==TRUE) { stop("The variable Group is not in ascending order. Please reorder the input (X,Tr,Y, Group) in ascending order of Groupp.")
          	 # ordg<-order(Group)
        	     # Group<-Group[ordg] ; Y<-Y[ordg]; Tr<-Tr[ordg] ; X<-as.matrix(as.matrix(X)[ordg,])
            	  }
@@ -47,7 +50,7 @@ weights=NULL,replace=TRUE,ties=TRUE,...) {
         	}
         Gmax <- length(unique(Group))#dim(table((Group)));
         if (Gmax==1){
-        	warning("There is only one group: same output of Match")
+        	warning("There is only one group or no group has been specified: same output of Match")
         	B<-Match(Y,Tr,X,estimand=estimand,M=1,exact=exact,caliper=caliper,
 weights=weights,replace=replace,ties=ties)
         	return(B)
@@ -205,7 +208,8 @@ MatchPW<-function(Y=NULL, Tr, X, Group=NULL,estimand="ATT",M=1, exact=NULL,calip
 
 # check missing arguments	
   if (replace==FALSE)
-  {warning("Match preferential within not possible with replace==FALSE. Resetting to the default, which is TRUE")}
+#  {warning("Match preferential within not possible with replace==FALSE. Resetting to the default, which is TRUE")}
+    {warning("You chose replace==FALSE. This means that all controls matched within will not be available in the preferential step. Note however that during the preferential step units are matched WITH replacement")}
     
      if (is.null(weights)) {
      	weights <- rep(1, length(Tr))} else {
@@ -213,10 +217,9 @@ MatchPW<-function(Y=NULL, Tr, X, Group=NULL,estimand="ATT",M=1, exact=NULL,calip
         } 
      if(is.null(exact)) {exact<-FALSE}
             if (any(Group%%1==0)==FALSE & is.null(Group)==FALSE){
-       	print("The variable Group should be integer valued")
-       	stop
+       	stop("The variable Group should be integer valued")
        	}
-       	  if (is.unsorted(Group)==TRUE) { print("The variable Group is not in ascending order. Please reorder the input (X,Tr,Y, Group) in ascending order of Group."); stop
+       	  if (is.unsorted(Group)==TRUE) { stop("The variable Group is not in ascending order. Please reorder the input (X,Tr,Y, Group) in ascending order of Group.")
        	  	  # ordg<-order(Group)
        	      # Group<-Group[ordg] ; Y<-Y[ordg]; Tr<-Tr[ordg] ; X<-as.matrix(as.matrix(X)[ordg,])
        	       }
@@ -225,7 +228,7 @@ MatchPW<-function(Y=NULL, Tr, X, Group=NULL,estimand="ATT",M=1, exact=NULL,calip
         	}
         	Gmax <- length(unique(Group))#dim(table((Group)));
           if (Gmax==1){
-        	warning("There is only one group: same output of Match")
+        	warning("There is only one group or no group was specified: same output of Match")
         	B<-Match(Y,Tr,X,estimand=estimand,M=1,exact=exact,caliper=caliper,
 weights=weights,replace=replace,ties=ties)
         	return(B)
@@ -238,7 +241,9 @@ weights=weights,replace=replace,ties=ties)
  # first Match within
  MW<- MatchW(Y, Tr, X, Group,
  estimand=estimand,M=M,exact=exact,caliper=caliper,
- replace=TRUE,ties=ties)
+ replace=replace,
+ #replace=TRUE,
+ ties=ties)
      
      if (length(MW$index.dropped)==0){
      	warning("all treated units matched within group")
@@ -246,23 +251,33 @@ weights=weights,replace=replace,ties=ties)
      	stop
      	}
                    
-# then create dataset with unmatched within and all treated/controls
+# then create dataset with unmatched within and remaining units in the opposite group
 if (estimand=="ATT"){
+	     if (replace==TRUE){indrem<- which(Tr==0)  }
+	     if (replace==FALSE){indrem<-setdiff ( which(Tr==0), MW$index.control)  }
         X  <-  as.matrix(X)        
-       Yu  <-  c( Y[MW$index.dropped], Y[Tr==0])
-      Tru  <-  c(Tr[MW$index.dropped], Tr[Tr==0])
-       Xu  <-  rbind(as.matrix(X[c(MW$index.dropped),  ]),
-       as.matrix(X[Tr==0, ]))
-       Wu  <-  c(weights[MW$index.dropped], weights[Tr==0])
+        #Yu  <-  c( Y[MW$index.dropped], Y[Tr==0])
+       Yu<-c( Y[MW$index.dropped], Y[indrem])
+         # Tru  <-  c(Tr[MW$index.dropped], Tr[Tr==0])
+        Tru  <-  c(Tr[MW$index.dropped], Tr[indrem])
+       #Xu  <-  rbind(as.matrix(X[c(MW$index.dropped),  ]),as.matrix(X[Tr==0, ]))
+              Xu  <-  rbind(as.matrix(X[c(MW$index.dropped),  ]),as.matrix(X[indrem, ]))
+       #Wu  <-  c(weights[MW$index.dropped], weights[Tr==0])
+              Wu  <-  c(weights[MW$index.dropped], weights[indrem])
        }
 
 if (estimand=="ATC"){
+		     if (replace==TRUE){indrem<- which(Tr==1)  }
+	     if (replace==FALSE){indrem<-setdiff ( which(Tr==1), MW$index.treated)  }
         X  <-  as.matrix(X)        
-       Yu  <-  c( Y[MW$index.dropped], Y[Tr==1])
-      Tru  <-  c(Tr[MW$index.dropped], Tr[Tr==1])
-       Xu  <-  rbind(as.matrix(X[c(MW$index.dropped), ]),
-       as.matrix(X[Tr==1, ]))
-       Wu  <-  c(weights[MW$index.dropped], weights[Tr==1])
+       #Yu  <-  c( Y[MW$index.dropped], Y[Tr==1])
+              Yu<-c( Y[MW$index.dropped], Y[indrem])
+      #Tru  <-  c(Tr[MW$index.dropped], Tr[Tr==1])
+             Tru  <-  c(Tr[MW$index.dropped], Tr[indrem])
+      # Xu  <-  rbind(as.matrix(X[c(MW$index.dropped), ]),as.matrix(X[Tr==1, ]))
+                     Xu  <-  rbind(as.matrix(X[c(MW$index.dropped),  ]),as.matrix(X[indrem, ]))
+       #Wu  <-  c(weights[MW$index.dropped], weights[Tr==1])
+                     Wu  <-  c(weights[MW$index.dropped], weights[indrem])
        } 
                    
 # calculate caliper
@@ -274,20 +289,30 @@ if (estimand=="ATC"){
           estimand=estimand,M=M,exact=exact,caliper= ucaliper,replace=TRUE,ties=ties)
                                                
            if (estimand=="ATE"){
+         if (replace==TRUE){indrem<- which(Tr==0)  }
+	     if (replace==FALSE){indrem<-setdiff ( which(Tr==0), MW$index.control)  }
    ind.unmatched.treated <-MW$index.dropped[Tr[MW$index.dropped]==1]
    ind.unmatched.controls<-MW$index.dropped[Tr[MW$index.dropped]==0]
         X  <-  as.matrix(X)        
-       Yut  <-  c( Y[ind.unmatched.treated], Y[Tr==0])
-      Trut  <-  c(Tr[ind.unmatched.treated], Tr[Tr==0])
-       Xut  <-  rbind(as.matrix(X[c(ind.unmatched.treated), ]),
-       as.matrix(X[Tr==0,]))
-       Wut  <-  c(weights[ind.unmatched.treated], weights[Tr==0])       
-       
-              Yuc  <-  c( Y[ind.unmatched.controls], Y[Tr==1])
-      Truc  <-  c(Tr[ind.unmatched.controls], Tr[Tr==1])
-       Xuc  <-  rbind(as.matrix(X[c(ind.unmatched.controls), ]),
-       as.matrix(X[Tr==1,]))
-       Wuc  <-  c(weights[ind.unmatched.controls], weights[Tr==1])       
+       #Yut  <-  c( Y[ind.unmatched.treated], Y[Tr==0])
+     Yut<-c( Y[MW$index.dropped], Y[indrem])
+      #Trut  <-  c(Tr[ind.unmatched.treated], Tr[Tr==0])
+            Trut  <-  c(Tr[ind.unmatched.treated], Tr[indrem])
+      # Xut  <-  rbind(as.matrix(X[c(ind.unmatched.treated), ]),as.matrix(X[Tr==0,]))
+              Xut  <-  rbind(as.matrix(X[c(ind.unmatched.treated), ]),as.matrix(X[indrem,]))
+      # Wut  <-  c(weights[ind.unmatched.treated], weights[Tr==0])       
+              Wut  <-  c(weights[ind.unmatched.treated], weights[indrem]) 
+               
+                if (replace==TRUE){indrem<- which(Tr==1)  }
+	     if (replace==FALSE){indrem<-setdiff ( which(Tr==1), MW$index.treated)  }
+              #Yuc  <-  c( Y[ind.unmatched.controls], Y[Tr==1])
+                            Yuc  <-  c( Y[ind.unmatched.controls], Y[indrem])
+      #Truc  <-  c(Tr[ind.unmatched.controls], Tr[Tr==1])
+            Truc  <-  c(Tr[ind.unmatched.controls], Tr[indrem])
+       #Xuc  <-  rbind(as.matrix(X[c(ind.unmatched.controls), ]),as.matrix(X[Tr==1,]))
+              Xuc  <-  rbind(as.matrix(X[c(ind.unmatched.controls), ]),as.matrix(X[indrem,]))
+       #Wuc  <-  c(weights[ind.unmatched.controls], weights[Tr==1])      
+              Wuc  <-  c(weights[ind.unmatched.controls], weights[indrem])    
        
        btwt <- Match(Y = Yut, Tr = Trut, X = Xut,weights=Wut, 
           estimand="ATT",exact=exact,caliper= ucaliper,replace=TRUE,ties=ties)
@@ -311,8 +336,10 @@ if (estimand=="ATC"){
 # add indexes of matches between (from MW) to indexes of matches between
 # aggiungo ad indici dei match within gli indici dei match between
  if (estimand=="ATT"){
-          BB$index.control <- 
-          c(MW$index.control, which(Tr==0)[btw$index.control-length(MW$index.dropped)])
+       #   BB$index.control <- 
+       #   c(MW$index.control, which(Tr==0)[btw$index.control-length(MW$index.dropped)])
+            BB$index.control <- 
+          c(MW$index.control, indrem[btw$index.control-length(MW$index.dropped)])
           BB$index.treated <- 
           c(MW$index.treated, MW$index.dropped[btw$index.treated])                   
           BB$index.dropped <- MW$index.dropped[btw$index.dropped]
@@ -320,7 +347,7 @@ if (estimand=="ATC"){
           }
  if (estimand=="ATC"){
           BB$index.control <- 
-          c(MW$index.control, which(Tr==0)[btw$index.control-length(MW$index.dropped)])
+          c(MW$index.control, indrem[btw$index.control-length(MW$index.dropped)])
           BB$index.treated <- 
           c(MW$index.treated, MW$index.dropped[btw$index.control])                    
           BB$index.dropped <- MW$index.dropped[btw$index.dropped]
