@@ -1,17 +1,15 @@
 \name{summary.CMatch}
 \alias{summary.CMatch}
 \alias{print.summary.CMatch}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Summarizing output from MatchW and MatchPW
+Summarizing output from MatchW and MatchPW functions
 }
 \description{
-summary method for \code{\link{MatchW}} and \code{\link{MatchPW}}
+Summary method for \code{\link{MatchW}} and \code{\link{MatchPW}}
 }
 \usage{
 \method{summary}{CMatch}(object, ..., full = FALSE, digits = 5)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object}{
 An object of class "\code{CMatch}".
@@ -27,15 +25,12 @@ The number of significant digits that should be displayed.
 }
 }
 \details{
-A summary of most important output from a "\code{CMatch}" object, including size of matched dataset and estimates (if \code{Y} is not \code{NULL}). If \emph{Group} contains only one value the output is the same of the summary method of package \code{Matching}. Otherwise the output shows also the distribution of treated (control) observations \emph{by group} and the distribution of dropped (because of 'caliper' or 'exact' option), also by group.
+If \code{Group} contains only one value the output is the same of the summary method of package \code{Matching}. Otherwise the output shows also the distribution of treated, control and possibly drop units, \emph{by group}.
 }
-% \value{
-% %%  ~Describe the value returned
-% %%  If it is a LIST, use
-% %%  \item{comp1 }{Description of 'comp1'}
-% %%  \item{comp2 }{Description of 'comp2'}
-% %% ...
-% }
+\value{
+A list giving a summary of the output from a "\code{CMatch}" object. The list includes the size of the original and the matched dataset, the number of treated and control observations in each group and the estimate (if \code{Y} is not \code{NULL}). 
+}
+
 \references{
 Sekhon, Jasjeet S. 2011. Multivariate and Propensity Score Matching Software with Automated Balance Optimization. \emph{Journal of Statistical Software 42(7): 1-52.} http://www.jstatsoft.org/v42/i07/
 
@@ -51,15 +46,5 @@ Naive standard errors are not available when there is more than one group so the
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-See also \code{\link{Match}},  \code{ \link{MatchW}},  \code{ \link{MatchPW}}, \code{ \link{MatchBalance}}
+See also \code{\link[CMatching]{CMatch}}, \code{ \link[CMatching]{CMatchBalance}}
 }
-% \examples{
-% ##---- Should be DIRECTLY executable !! ----
-% ##-- ==>  Define data, use random,
-% ##--	or do  help(data=index)  for the standard data sets.
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-%}
-%\keyword{ ~kwd1 }% use one of  RShowDoc("KEYWORDS")
-%\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
-

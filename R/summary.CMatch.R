@@ -1,8 +1,5 @@
-#########
-## function summary.CMatch
-#########
-
-summary.CMatch<-function (object, ..., full = FALSE, digits = 5) 
+summary.CMatch <-
+function (object, ..., full = FALSE, digits = 5) 
 {
 
     if (!is.list(object)) {
@@ -104,13 +101,4 @@ summary.CMatch<-function (object, ..., full = FALSE, digits = 5)
     z <- list()
     class(z) <- "summary.CMatch"
     return(invisible(z))
-}
-
-###########
-## function print.summary.CMatch
-###########
-
-print.summary.CMatch<-function (x, ...) 
-{
-    invisible(NULL)
 }
